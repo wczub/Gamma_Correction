@@ -6,8 +6,10 @@
 #               so it is never too bright or too dark.            
 #==================================================================
  
-
- 
+#Importing open cv and numpy for video manipulation
+#Importing PIL for image manipulation for each frame
+import cv2
+import numpy as np
 from PIL import Image
 from PIL import ImageEnhance
 
@@ -31,45 +33,37 @@ def get_avg_pixel(pic):
             R,G,B = pixRGB
             avg += (sum([R,G,B]) / 3.0) #gets the average rgb value of pixels
     avg = avg / ((width/5) * (height/5)) 
+    
+    #if the brightness is too bright, it wont
+    #need to brighten the photo
+    if avg > 50:
+        avg = 0
+        
     return avg
 #END DEF
 
-def change_brightness(org_image):
-    #function changes brightness depending on the average pixel value
-    
-    #load the original image into a list
-    #org_image = Image.open(filename, 'r')
-    pixels = org_image.getdata()
-    extent = 0.0
-    pic_brightness = get_avg_pixel(org_image)
-    print pic_brightness
-    action = 'darken'
-    extent += (pic_brightness / 100)
-    if(pic_brightness < 50):
-        action = 'lighten'
-    
-    #if the photo is too bright it won't darken it too much
-    #and if the photo is too dark it won't brighten it too much
-    print extent
-    if extent > .40:
-        extent = .40
-    elif extent < .10:
-        extent = .10
-    print extent
 
+def lighten_photo(org_image, pic_brightness):
+    
+    #Gets all the pixels from org_image and stores it in pixels
+    pixels = org_image.getdata()
+    
+    #Sets the extent of how much to brighten the photo
+    #and changes it to a decimal.
+    extent = 0.0
+    extent += (pic_brightness / 100)
+  
     #creates a new image to preserve the original
     new_image = Image.new('RGB', org_image.size)
     new_image_list = []
 
-    brightness_multiplier = 1.0 
-    if action == 'lighten':
-        brightness_multiplier += (extent)
-    else:
-        brightness_multiplier -= (extent)
+    #Adds the extent of the brightness to the multiplier.
+    brightness_multiplier = 1.0 + extent
 
     #goes through and adds the changed pixels into an array
     #for the new image
     for pixel in pixels:
+        #if you change all three values the same amount the color doesn't change but the brightness does. 
         new_pixel = (int(pixel[0] * brightness_multiplier),
                      int(pixel[1] * brightness_multiplier),
                      int(pixel[2] * brightness_multiplier))
@@ -89,4 +83,7 @@ def change_brightness(org_image):
 #END DEF
 
 photo = get_file()
-change_brightness(photo)
+brightness = get_brightness(photo)
+if brightness != 0:
+    lighten_photo(photo, brightness)
+    
