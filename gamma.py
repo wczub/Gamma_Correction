@@ -2,8 +2,8 @@
 # Project: Gamma Normalization                                    
 # Filename: gamma.py                                              
 # Description:  This program will take in a video from the user   
-#               and then it will normalize the gamma levels       
-#               so it is never too bright or too dark.            
+#               and then it will brighten the frames that are      
+#               too dark and leave the rest alone     
 #==================================================================
  
 #Importing open cv and numpy for video manipulation
@@ -14,13 +14,15 @@ from PIL import Image
 from PIL import ImageEnhance
 import sys
 
-def get_file(): #Simple gets the file for testing with single photo
+def get_file(): 
     
+    #Gets the file path from the user
     path = raw_input("Enter file Path: ")
-    print path
 
     #Opens the video file and stores it in vid
     vid = cv2.VideoCapture(path)
+
+    #Opens the video to be ready to use
     vid.open(path)
     
     #Lets the program load the video
@@ -28,7 +30,7 @@ def get_file(): #Simple gets the file for testing with single photo
 
     #if the file can't be opened it tells the user and exits the program
     if vid.isOpened() is False:
-        print "File failed to open!"
+        print "File failed to open! ", path
         sys.exit(1)
 
     return vid
@@ -40,8 +42,9 @@ def get_avg_pixel(pic):
     #pixels in the image
     pixel = list(pic.getdata()) 
    
+   #Sets avg be a double, and gets the height and width
+   #of the frame size
     avg = 0.0
-   
     width, height = pic.size 
    
     #loops through the photo, checking the every 10th pixel, so as to  
@@ -49,11 +52,16 @@ def get_avg_pixel(pic):
     for y in range(0, height-1, 5):
     
         for x in range(0, width-1, 5):
-    
+            
+            #Gets the RGB value of each pixel
             pixRGB = pic.getpixel((x, y))
             R,G,B = pixRGB
-            avg += (sum([R,G,B]) / 3.0) #gets the average rgb value of pixels
+            #Adds the average of the pixels to the average of the 
+            #entire frame to check for brightness
+            avg += (sum([R,G,B]) / 3.0) 
     
+    #calculates the average of the whole photo
+    #this gives it a number 0-255 which is the brightness of the photo.
     avg = avg / ((width/5) * (height/5)) 
     
     #if the brightness is too bright, it wont
@@ -159,10 +167,6 @@ def get_video_image(vid):
 
 #END DEF
 
-def release_video(vid):
-    cv2.VideoCapture.release(vid)
-#END DEF
-
 def main():
     
     #Gets the video file
@@ -181,7 +185,8 @@ def main():
         if frame_pos == video.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT):
             break
         
-    release_video(video)
+    #realease the video so it can close
+    cv2.VideoCapture.release(video)
 #END DEF
 
 main()
