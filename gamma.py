@@ -22,13 +22,16 @@ def get_file(): #Simple gets the file for testing with single photo
     #Opens the video file and stores it in vid
     vid = cv2.VideoCapture(path)
     vid.open(path)
+    
+    #Lets the program load the video
+    cv2.waitKey(1000)
 
     #if the file can't be opened it tells the user and exits the program
     if vid.isOpened() is False:
         print "File failed to open!"
         sys.exit(1)
 
-    return video
+    return vid
 #END DEF
     
 def get_avg_pixel(pic): 
@@ -112,27 +115,47 @@ def lighten_photo(org_image):
 #END DEF
 
 def replace_photo(vid, pic):
+    
+    #Converts the image back from RGB to BGR
+    new_frame = numpy.array(pic) 
+    
+    # Convert RGB to BGR 
+    new_frame = new_frame[:, :, ::-1].copy() 
+    
     #Writes the frame to the video
-    vid.write(pic)
+    vid.write(new_frame)
 #END DEF
 
 def get_video_image(vid):
     
     #Reads in the frame from the video
     flag, frame = vid.read()
+    
+    #Gets the current frame position
+    frame_pos = vid.get(cv2.cv.CV_CAP_PROP_POS_FRAMES)
 
-
-    if flag == 0:
+    if flag:
+    
+        #Converts the frame from BGR to RGB using numpy
+        data = np.asarray(frame)
+        frame = Image.fromarray(np.roll(data, 1, axis=-1))
         
-        #If something went wrong, or reach end of file
-        #returns false
-        return False
+        #if everything is good, then it lightens photo
+        new_frame = lighten_photo(frame)
+        replace_photo(vid, new_frame)
+    
+    else:
+        
+        #If the frame could not be read, then it sets the video
+        #back a frame so it can retry the current image
+        cap.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, frame_pos - 1)
+        
+        #Lets the next frame load if it couldn't be read correctly
+        #the first time
+        cv2.waitKey(100)
 
-    #if everything is goood, then it lightens photo
-    #and returns true
-    new_frame = lighten_photo(frame)
-    replace_photo(vid, new_frame)
-    return True
+   
+    return frame_pos
 
 #END DEF
 
@@ -146,10 +169,18 @@ def main():
     video = get_file()
 
     #loops while it is still retrieving images
-    cont = True
-    while cont:
-        get_video_image(video)
-
+    
+    while True:
+        
+        #Gets the frame and lightens the photo if need be
+        #and returns the frame position 
+        frame_pos = get_video_image(video)
+        
+        #if the video reaches the end of the video, then it stops the loop
+        #and ends the program
+        if frame_pos == video.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT):
+            break
+        
     release_video(video)
 #END DEF
 
