@@ -1,9 +1,10 @@
 #==================================================================
-# Project: Gamma Normalization                                    
-# Filename: gamma.py                                              
-# Description:  This program will take in a video from the user   
-#               and then it will brighten the frames that are      
-#               too dark and leave the rest alone     
+# Project Title: Gamma Normalization    
+#          Name: Will Czubiak                                
+#      Filename: gamma.py                                              
+#      Abstract: This program will take in a video from the user   
+#                and then it will brighten the frames that are      
+#                too dark and leave the rest alone     
 #==================================================================
  
 #Importing open cv and numpy for video manipulation
@@ -37,9 +38,10 @@ def get_file():
 #END DEF
     
 def get_avg_pixel(pic): 
-  
     #this function returns the average value of all the
     #pixels in the image
+    
+    #Gets a three dimensional array with RGB Values of each pixel
     pixel = list(pic.getdata()) 
    
    #Sets avg be a double, and gets the height and width
@@ -47,7 +49,7 @@ def get_avg_pixel(pic):
     avg = 0.0
     width, height = pic.size 
    
-    #loops through the photo, checking the every 10th pixel, so as to  
+    #loops through the photo, checking the every 5th pixel, so as to  
     #speed up the process 
     for y in range(0, height-1, 5):
     
@@ -56,6 +58,7 @@ def get_avg_pixel(pic):
             #Gets the RGB value of each pixel
             pixRGB = pic.getpixel((x, y))
             R,G,B = pixRGB
+            
             #Adds the average of the pixels to the average of the 
             #entire frame to check for brightness
             avg += (sum([R,G,B]) / 3.0) 
@@ -136,7 +139,8 @@ def replace_photo(vid, pic):
 
 def get_video_image(vid):
     
-    #Reads in the frame from the video
+    #Reads in the frame from the video and returns a boolean
+    #into the variable flag if it was read in correctly
     flag, frame = vid.read()
     
     #Gets the current frame position
@@ -173,7 +177,6 @@ def main():
     video = get_file()
 
     #loops while it is still retrieving images
-    
     while True:
         
         #Gets the frame and lightens the photo if need be
@@ -185,8 +188,9 @@ def main():
         if frame_pos == video.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT):
             break
         
-    #realease the video so it can close
+    #release the video so it can close
     cv2.VideoCapture.release(video)
 #END DEF
 
+#This just starts the code and sends it to it's own function.
 main()
